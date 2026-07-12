@@ -65,7 +65,7 @@ button, input { font: inherit; }
 }
 .icon-button:hover { color: #f3f6f7; background: rgba(255, 255, 255, 0.07); }
 .icon-button:active { transform: scale(0.94); }
-.icon-button.is-active { color: var(--accent); }
+.icon-button.is-active { color: var(--accent); background: rgba(159, 219, 180, 0.11); }
 .icon-button:focus-visible, .error-state button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .summary { padding: 20px 18px 17px; display: flex; justify-content: space-between; align-items: end; }

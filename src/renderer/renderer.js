@@ -101,8 +101,16 @@ $('retryButton').addEventListener('click', refresh);
 $('minimizeButton').addEventListener('click', () => invoke('hide_window'));
 $('closeButton').addEventListener('click', () => invoke('hide_window'));
 $('pinButton').addEventListener('click', async () => {
-  const pinned = await invoke('toggle_pin');
-  $('pinButton').classList.toggle('is-active', pinned);
+  try {
+    const pinned = await invoke('toggle_pin');
+    $('pinButton').classList.toggle('is-active', pinned);
+    $('pinButton').setAttribute('aria-label', pinned ? 'Disable always on top' : 'Enable always on top');
+    $('pinButton').title = `Always on top: ${pinned ? 'on' : 'off'}`;
+    $('statusText').textContent = pinned ? 'Always on top enabled' : 'Always on top disabled';
+  } catch (error) {
+    console.error(error);
+    $('statusText').textContent = 'Could not change window level';
+  }
 });
 $('startupToggle').addEventListener('change', async (event) => {
   if (event.target.checked) await enable(); else await disable();
@@ -111,6 +119,7 @@ $('startupToggle').addEventListener('change', async (event) => {
 
 invoke('get_settings').then((settings) => {
   $('pinButton').classList.toggle('is-active', settings.pinned);
+  $('pinButton').title = `Always on top: ${settings.pinned ? 'on' : 'off'}`;
   document.querySelector('.widget').classList.toggle('expanded', settings.expanded);
   $('expandButton').querySelector('span').textContent = settings.expanded ? '↙' : '↗';
 });

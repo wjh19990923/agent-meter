@@ -6,7 +6,10 @@ use std::{
     fs::File,
     io::{BufRead, BufReader},
     path::{Path, PathBuf},
-    sync::{Mutex, OnceLock},
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Mutex, OnceLock,
+    },
     time::UNIX_EPOCH,
 };
 use tauri::{
@@ -59,6 +62,8 @@ struct UsageCache {
     codex: SourceCache,
     claude: SourceCache,
 }
+
+struct PinState(AtomicBool);
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -452,22 +457,19 @@ fn hide_window(window: WebviewWindow) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn toggle_pin(window: WebviewWindow) -> Result<bool, String> {
-    let next = !window
-        .is_always_on_top()
-        .map_err(|error| error.to_string())?;
+fn toggle_pin(window: WebviewWindow, pin_state: State<'_, PinState>) -> Result<bool, String> {
+    let next = !pin_state.0.load(Ordering::SeqCst);
     window
         .set_always_on_top(next)
         .map_err(|error| error.to_string())?;
+    pin_state.0.store(next, Ordering::SeqCst);
     Ok(next)
 }
 
 #[tauri::command]
-fn get_settings(window: WebviewWindow) -> Result<Settings, String> {
+fn get_settings(window: WebviewWindow, pin_state: State<'_, PinState>) -> Result<Settings, String> {
     Ok(Settings {
-        pinned: window
-            .is_always_on_top()
-            .map_err(|error| error.to_string())?,
+        pinned: pin_state.0.load(Ordering::SeqCst),
         expanded: window
             .inner_size()
             .map_err(|error| error.to_string())?
@@ -504,6 +506,7 @@ fn show(app: &AppHandle) {
 pub fn run() {
     tauri::Builder::default()
         .manage(Mutex::new(UsageCache::default()))
+        .manage(PinState(AtomicBool::new(true)))
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
             None,
