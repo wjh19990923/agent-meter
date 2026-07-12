@@ -2,15 +2,16 @@
 
 # Agent Meter
 
-**A lightweight Windows widget for Codex and Claude Code usage.**
+**A lightweight Windows and macOS widget for Codex and Claude Code usage.**
 
-[![Current version](https://img.shields.io/badge/current_version-v0.4.0-9fdbb4?style=for-the-badge)](https://github.com/wjh19990923/agent-meter/releases/tag/v0.4.0)
+[![Current version](https://img.shields.io/badge/current_version-v0.5.0-9fdbb4?style=for-the-badge)](https://github.com/wjh19990923/agent-meter/releases/tag/v0.5.0)
 
 <a href="#english"><img alt="English" src="https://img.shields.io/badge/English-171b20?style=for-the-badge"></a>
 <a href="#中文"><img alt="中文" src="https://img.shields.io/badge/中文-75a987?style=for-the-badge"></a>
 
-[![Portable download](https://img.shields.io/badge/Download-Portable_EXE-9fdbb4?style=for-the-badge&logo=windows&logoColor=171b20)](https://github.com/wjh19990923/agent-meter/releases/download/v0.4.0/Agent-Meter-Tauri-0.4.0-Portable.exe)
-[![Setup download](https://img.shields.io/badge/Download-Installer-8abf9d?style=for-the-badge&logo=windows&logoColor=171b20)](https://github.com/wjh19990923/agent-meter/releases/download/v0.4.0/Agent-Meter-Tauri-0.4.0-Setup.exe)
+[![Windows portable](https://img.shields.io/badge/Windows-Portable_EXE-9fdbb4?style=for-the-badge&logo=windows&logoColor=171b20)](https://github.com/wjh19990923/agent-meter/releases/download/v0.5.0/Agent-Meter-Tauri-0.5.0-Portable.exe)
+[![Windows installer](https://img.shields.io/badge/Windows-Installer-8abf9d?style=for-the-badge&logo=windows&logoColor=171b20)](https://github.com/wjh19990923/agent-meter/releases/download/v0.5.0/Agent-Meter-Tauri-0.5.0-Setup.exe)
+[![macOS universal](https://img.shields.io/badge/macOS-Universal_DMG-b9e8c8?style=for-the-badge&logo=apple&logoColor=171b20)](https://github.com/wjh19990923/agent-meter/releases/download/v0.5.0/Agent-Meter-0.5.0-macOS-Universal.dmg)
 
 ## Two views, one click / 一键切换两种形态
 
@@ -45,25 +46,26 @@ Drag the widget against any screen edge to shrink it automatically; drag it away
 
 ## English
 
-Agent Meter is a lightweight, local-first Windows desktop widget for monitoring Codex and Claude Code token usage and API-equivalent cost estimates. It is built with Tauri 2 and the portable executable is about 3 MB.
+Agent Meter is a lightweight, local-first Windows and macOS desktop widget for monitoring Codex and Claude Code token usage and API-equivalent cost estimates. It is built with Tauri 2.
 
-**Current release: [v0.4.0](https://github.com/wjh19990923/agent-meter/releases/tag/v0.4.0)**
+**Current release: [v0.5.0](https://github.com/wjh19990923/agent-meter/releases/tag/v0.5.0)**
 
 ### Download
 
 | Package | Best for | Direct download |
 |---|---|---|
-| Portable `.exe` | Trying Agent Meter without installing it | [Download portable version](https://github.com/wjh19990923/agent-meter/releases/download/v0.4.0/Agent-Meter-Tauri-0.4.0-Portable.exe) |
-| NSIS installer | Daily use and Start Menu integration | [Download installer](https://github.com/wjh19990923/agent-meter/releases/download/v0.4.0/Agent-Meter-Tauri-0.4.0-Setup.exe) |
+| Windows portable `.exe` | Trying Agent Meter without installing it | [Download Windows portable](https://github.com/wjh19990923/agent-meter/releases/download/v0.5.0/Agent-Meter-Tauri-0.5.0-Portable.exe) |
+| Windows NSIS installer | Daily use and Start Menu integration | [Download Windows installer](https://github.com/wjh19990923/agent-meter/releases/download/v0.5.0/Agent-Meter-Tauri-0.5.0-Setup.exe) |
+| macOS universal `.dmg` | Apple Silicon and Intel Macs | [Download macOS DMG](https://github.com/wjh19990923/agent-meter/releases/download/v0.5.0/Agent-Meter-0.5.0-macOS-Universal.dmg) |
 
-Windows SmartScreen may warn about an unknown publisher because the binaries are not code-signed. If you built or downloaded the file from this repository, select **More info → Run anyway**.
+Windows SmartScreen or macOS Gatekeeper may warn because the binaries are not notarized with paid platform certificates. On macOS, open the DMG, drag Agent Meter to Applications, then Control-click the app and choose **Open** the first time.
 
 ### How it works
 
 Agent Meter reads token metadata from local session files:
 
-- `%USERPROFILE%\.codex\sessions\**\*.jsonl`
-- `%USERPROFILE%\.claude\projects\**\*.jsonl`
+- Windows: `%USERPROFILE%\.codex\sessions\**\*.jsonl` and `%USERPROFILE%\.claude\projects\**\*.jsonl`
+- macOS: `~/.codex/sessions/**/*.jsonl` and `~/.claude/projects/**/*.jsonl`
 
 No API key or account login is required. Session files are read in place and are never modified or uploaded.
 
@@ -108,7 +110,7 @@ These values are **API-equivalent estimates**. They are not ChatGPT Pro, Claude 
 
 Prerequisites:
 
-- Windows 10 or Windows 11 with WebView2;
+- Windows 10/11 with WebView2, or macOS;
 - Rust stable using the MSVC toolchain;
 - Microsoft C++ Build Tools;
 - Node.js.
@@ -127,29 +129,32 @@ npm.cmd run check
 npm.cmd run build
 ```
 
+On macOS, use `npm install`, `npm run dev`, and `npm run build:macos`. A tagged release is built as a universal DMG on a native macOS GitHub runner.
+
 ---
 
 ## 中文
 
-Agent Meter 是一个轻量、完全本地运行的 Windows 桌面小组件，用来查看 Codex 和 Claude Code 的 token 用量以及 API 等价费用估算。项目使用 Tauri 2 构建，免安装版约 3 MB。
+Agent Meter 是一个轻量、完全本地运行的 Windows 和 macOS 桌面小组件，用来查看 Codex 和 Claude Code 的 token 用量以及 API 等价费用估算。项目使用 Tauri 2 构建。
 
-**当前版本：[v0.4.0](https://github.com/wjh19990923/agent-meter/releases/tag/v0.4.0)**
+**当前版本：[v0.5.0](https://github.com/wjh19990923/agent-meter/releases/tag/v0.5.0)**
 
 ### 下载
 
 | 版本 | 适合场景 | 直接下载 |
 |---|---|---|
-| 便携版 `.exe` | 不安装，下载后直接测试 | [下载便携版](https://github.com/wjh19990923/agent-meter/releases/download/v0.4.0/Agent-Meter-Tauri-0.4.0-Portable.exe) |
-| NSIS 安装包 | 长期使用，集成到开始菜单 | [下载安装包](https://github.com/wjh19990923/agent-meter/releases/download/v0.4.0/Agent-Meter-Tauri-0.4.0-Setup.exe) |
+| Windows 便携版 `.exe` | 不安装，下载后直接测试 | [下载 Windows 便携版](https://github.com/wjh19990923/agent-meter/releases/download/v0.5.0/Agent-Meter-Tauri-0.5.0-Portable.exe) |
+| Windows NSIS 安装包 | 长期使用，集成到开始菜单 | [下载 Windows 安装包](https://github.com/wjh19990923/agent-meter/releases/download/v0.5.0/Agent-Meter-Tauri-0.5.0-Setup.exe) |
+| macOS 通用 `.dmg` | 同时支持 Apple Silicon 和 Intel Mac | [下载 macOS DMG](https://github.com/wjh19990923/agent-meter/releases/download/v0.5.0/Agent-Meter-0.5.0-macOS-Universal.dmg) |
 
-由于当前文件没有商业代码签名证书，Windows SmartScreen 可能显示“未知发布者”。确认文件来自本仓库后，可以选择 **更多信息 → 仍要运行**。
+由于当前文件没有付费平台签名与 Apple 公证，Windows SmartScreen 或 macOS Gatekeeper 可能会提示。macOS 首次使用时，把应用拖入“应用程序”，然后按住 Control 点击 Agent Meter 并选择 **打开**。
 
 ### 工作原理
 
 Agent Meter 读取本机的 token 元数据：
 
-- `%USERPROFILE%\.codex\sessions\**\*.jsonl`
-- `%USERPROFILE%\.claude\projects\**\*.jsonl`
+- Windows：`%USERPROFILE%\.codex\sessions\**\*.jsonl` 和 `%USERPROFILE%\.claude\projects\**\*.jsonl`
+- macOS：`~/.codex/sessions/**/*.jsonl` 和 `~/.claude/projects/**/*.jsonl`
 
 软件不需要 API Key，也不需要登录账号。它只读本地 session 文件，不修改文件，也不会上传聊天记录或使用数据。
 
@@ -194,7 +199,7 @@ Agent Meter 读取本机的 token 元数据：
 
 开发环境需要：
 
-- 带 WebView2 的 Windows 10 或 Windows 11；
+- 带 WebView2 的 Windows 10/11，或 macOS；
 - 使用 MSVC 工具链的 Rust stable；
 - Microsoft C++ Build Tools；
 - Node.js。
@@ -212,6 +217,8 @@ npm.cmd run dev
 npm.cmd run check
 npm.cmd run build
 ```
+
+在 macOS 上使用 `npm install`、`npm run dev` 和 `npm run build:macos`。推送版本标签后，GitHub Actions 会在原生 macOS 环境构建同时支持 Apple Silicon 与 Intel 的通用 DMG。
 
 ---
 

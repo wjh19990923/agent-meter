@@ -1,0 +1,47 @@
+name: Release macOS
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Rust targets
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and upload universal macOS bundles
+        uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLE_SIGNING_IDENTITY: "-"
+        with:
+          tagName: v__VERSION__
+          releaseName: Agent Meter v__VERSION__
+          releaseBody: |
+            Agent Meter for Windows and macOS.
+
+            macOS builds are universal and support both Apple Silicon and Intel Macs.
+          releaseDraft: false
+          prerelease: false
+          args: --target universal-apple-darwin --bundles dmg
+          releaseAssetNamePattern: Agent-Meter-[version]-macOS-Universal.[ext]

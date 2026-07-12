@@ -441,8 +441,9 @@ fn summarize(source: &SourceCache, today: &str) -> AgentSnapshot {
 #[tauri::command]
 fn get_usage(cache: State<'_, Mutex<UsageCache>>) -> Result<Snapshot, String> {
     let home = std::env::var_os("USERPROFILE")
+        .or_else(|| std::env::var_os("HOME"))
         .map(PathBuf::from)
-        .ok_or("USERPROFILE is unavailable")?;
+        .ok_or("Home directory is unavailable")?;
     let mut cache = cache.lock().map_err(|_| "Usage cache lock failed")?;
     scan_source(
         &mut cache.codex,
@@ -710,7 +711,8 @@ mod tests {
     }
 
     #[test]
-    fn project_name_reads_windows_path_on_windows() {
+    fn project_name_reads_cross_platform_paths() {
         assert_eq!(project_name(r"C:\work\alpha"), "alpha");
+        assert_eq!(project_name("/Users/test/work/beta"), "beta");
     }
 }
