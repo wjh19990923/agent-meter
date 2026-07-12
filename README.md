@@ -4,6 +4,8 @@
 
 **A lightweight Windows widget for Codex and Claude Code usage.**
 
+[![Current version](https://img.shields.io/badge/current_version-v0.3.1-9fdbb4?style=for-the-badge)](https://github.com/wjh19990923/agent-meter/releases/tag/v0.3.1)
+
 <a href="#english"><img alt="English" src="https://img.shields.io/badge/English-171b20?style=for-the-badge"></a>
 <a href="#中文"><img alt="中文" src="https://img.shields.io/badge/中文-75a987?style=for-the-badge"></a>
 
@@ -38,6 +40,8 @@
 ## English
 
 Agent Meter is a lightweight, local-first Windows desktop widget for monitoring Codex and Claude Code token usage and API-equivalent cost estimates. It is built with Tauri 2 and the portable executable is about 3 MB.
+
+**Current release: [v0.3.1](https://github.com/wjh19990923/agent-meter/releases/tag/v0.3.1)**
 
 ### Download
 
@@ -118,6 +122,8 @@ npm.cmd run build
 ## 中文
 
 Agent Meter 是一个轻量、完全本地运行的 Windows 桌面小组件，用来查看 Codex 和 Claude Code 的 token 用量以及 API 等价费用估算。项目使用 Tauri 2 构建，免安装版约 3 MB。
+
+**当前版本：[v0.3.1](https://github.com/wjh19990923/agent-meter/releases/tag/v0.3.1)**
 
 ### 下载
 
