@@ -1,0 +1,25 @@
+{
+  "name": "agent-meter",
+  "version": "0.3.0",
+  "description": "A private Windows desktop widget for live Codex and Claude Code usage.",
+  "author": "wjh",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "tauri dev",
+    "check": "cargo test --manifest-path src-tauri/Cargo.toml",
+    "build": "tauri build --bundles nsis",
+    "frontend:dev": "vite src/renderer --port 1420 --strictPort",
+    "frontend:build": "vite build src/renderer --outDir ../../dist-ui --emptyOutDir",
+    "pricing:update": "node scripts/update-pricing.mjs",
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.8.5",
+    "vite": "^7.0.0"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.8.0",
+    "@tauri-apps/plugin-autostart": "^2.5.0"
+  }
+}

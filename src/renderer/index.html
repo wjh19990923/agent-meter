@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>Agent Meter</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="widget" aria-live="polite">
+      <header class="titlebar">
+        <div class="brand">
+          <span class="meter-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span>Agent Meter</span>
+        </div>
+        <div class="window-actions">
+          <button id="expandButton" class="icon-button" type="button" aria-label="Expand details" title="Expand details">
+            <span aria-hidden="true">↗</span>
+          </button>
+          <button id="refreshButton" class="icon-button" type="button" aria-label="Refresh usage" title="Refresh">
+            <span aria-hidden="true">↻</span>
+          </button>
+          <button id="pinButton" class="icon-button is-active" type="button" aria-label="Toggle always on top" title="Always on top">
+            <span aria-hidden="true">⌖</span>
+          </button>
+          <button id="minimizeButton" class="icon-button" type="button" aria-label="Hide widget" title="Hide">
+            <span aria-hidden="true">−</span>
+          </button>
+          <button id="closeButton" class="icon-button" type="button" aria-label="Close to tray" title="Close to tray">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+      </header>
+
+      <section class="compact-summary">
+        <div class="compact-agent"><span>Codex</span><strong id="compactCodex">0</strong></div>
+        <div class="compact-agent"><span>Claude</span><strong id="compactClaude">0</strong></div>
+        <div class="compact-cost"><span>Today estimate</span><strong id="compactCost">$0.00</strong></div>
+      </section>
+
+      <section class="summary detailed" aria-labelledby="today-label">
+        <div>
+          <p id="today-label" class="label">Today</p>
+          <p id="totalTokens" class="total">Loading</p>
+          <p class="cost-line"><span id="totalCost">$0.00</span> API equivalent estimate</p>
+        </div>
+        <div class="live-state">
+          <span id="liveIndicator" class="status-dot" aria-hidden="true"></span>
+          <span id="statusText">Scanning local logs</span>
+        </div>
+      </section>
+
+      <div id="loadingState" class="loading-state detailed" aria-label="Loading usage data">
+        <span></span><span></span><span></span><span></span>
+      </div>
+
+      <div id="content" class="content detailed is-hidden">
+        <section class="agent" data-agent="codex">
+          <div class="agent-heading">
+            <div>
+              <p class="agent-name">Codex</p>
+              <p id="codexProject" class="project">No active project</p>
+            </div>
+            <div class="agent-amount">
+              <p id="codexTotal" class="agent-total">0</p>
+              <p id="codexCost" class="agent-cost">$0.00 est.</p>
+            </div>
+          </div>
+          <div class="metric-grid">
+            <div><span>Input</span><strong id="codexInput">0</strong></div>
+            <div><span>Cached</span><strong id="codexCached">0</strong></div>
+            <div><span>Output</span><strong id="codexOutput">0</strong></div>
+          </div>
+          <p class="chart-title">Token usage, last 7 days</p>
+          <div id="codexChart" class="sparkline" aria-label="Codex seven day token usage"></div>
+        </section>
+
+        <section class="agent" data-agent="claude">
+          <div class="agent-heading">
+            <div>
+              <p class="agent-name">Claude Code</p>
+              <p id="claudeProject" class="project">No active project</p>
+            </div>
+            <div class="agent-amount">
+              <p id="claudeTotal" class="agent-total">0</p>
+              <p id="claudeCost" class="agent-cost">$0.00 est.</p>
+            </div>
+          </div>
+          <div class="metric-grid">
+            <div><span>Input</span><strong id="claudeInput">0</strong></div>
+            <div><span>Cached</span><strong id="claudeCached">0</strong></div>
+            <div><span>Output</span><strong id="claudeOutput">0</strong></div>
+          </div>
+          <p class="chart-title">Token usage, last 7 days</p>
+          <div id="claudeChart" class="sparkline" aria-label="Claude Code seven day token usage"></div>
+        </section>
+      </div>
+
+      <section id="emptyState" class="empty-state detailed is-hidden">
+        <p>No usage recorded today</p>
+        <span>Start a Codex or Claude Code session. This view updates automatically.</span>
+      </section>
+
+      <section id="errorState" class="error-state detailed is-hidden" role="alert">
+        <p>Local logs could not be read</p>
+        <button id="retryButton" type="button">Try again</button>
+      </section>
+
+      <footer class="detailed">
+        <label class="startup-control">
+          <input id="startupToggle" type="checkbox" />
+          <span>Launch at startup</span>
+        </label>
+        <span id="updatedAt">Not updated</span>
+      </footer>
+    </main>
+    <script type="module" src="/renderer.js"></script>
+  </body>
+</html>

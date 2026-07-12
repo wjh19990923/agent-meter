@@ -1,0 +1,9 @@
+node_modules/
+dist/
+dist-ui/
+src-tauri/target/
+src-tauri/gen/
+*.log
+.DS_Store
+Thumbs.db
+.agent-meter-cache.json
