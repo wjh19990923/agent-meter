@@ -10,7 +10,26 @@
 [![Portable download](https://img.shields.io/badge/Download-Portable_EXE-9fdbb4?style=for-the-badge&logo=windows&logoColor=171b20)](https://github.com/wjh19990923/agent-meter/releases/download/v0.3.0/Agent-Meter-Tauri-0.3.0-Portable.exe)
 [![Setup download](https://img.shields.io/badge/Download-Installer-8abf9d?style=for-the-badge&logo=windows&logoColor=171b20)](https://github.com/wjh19990923/agent-meter/releases/download/v0.3.0/Agent-Meter-Tauri-0.3.0-Setup.exe)
 
-![Agent Meter compact widget](docs/images/compact-widget.png)
+## Two views, one click / 一键切换两种形态
+
+<table>
+  <tr>
+    <th>Compact widget / 紧凑小浮窗</th>
+    <th>Expanded details / 展开详情</th>
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+      <img src="docs/images/compact-widget.png" alt="Agent Meter compact widget showing Codex, Claude, and estimated cost" width="430">
+      <br>
+      <sub>Codex + Claude + today's estimate / 一眼查看双端用量与费用</sub>
+    </td>
+    <td align="center" valign="top">
+      <img src="docs/images/expanded-details.png" alt="Agent Meter expanded view showing token breakdowns, costs, and seven-day charts" width="360">
+      <br>
+      <sub>Breakdowns, costs, projects, and charts / 明细、费用、项目与趋势</sub>
+    </td>
+  </tr>
+</table>
 
 </div>
 
