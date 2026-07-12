@@ -40,6 +40,32 @@ button, input { font: inherit; }
 .expanded .compact-summary { display: none; }
 .widget:not(.expanded) .detailed { display: none !important; }
 
+.docked-summary { display: none; }
+.edge-docked .titlebar,
+.edge-docked .compact-summary,
+.edge-docked .detailed { display: none !important; }
+.edge-docked .docked-summary {
+  height: 100vh;
+  padding: 0 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  -webkit-app-region: drag;
+}
+.edge-docked .docked-summary strong {
+  margin-left: 2px;
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 12px;
+  font-weight: 600;
+}
+.edge-docked .docked-summary > span:last-child {
+  margin-left: auto;
+  color: var(--accent-strong);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 11px;
+  font-weight: 600;
+}
+
 .titlebar {
   height: 50px;
   padding: 0 10px 0 16px;

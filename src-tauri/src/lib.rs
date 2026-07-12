@@ -7,7 +7,7 @@ use std::{
     io::{BufRead, BufReader},
     path::{Path, PathBuf},
     sync::{
-        atomic::{AtomicBool, Ordering},
+        atomic::{AtomicBool, AtomicU8, Ordering},
         Mutex, OnceLock,
     },
     time::UNIX_EPOCH,
@@ -15,7 +15,7 @@ use std::{
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    AppHandle, Manager, State, WebviewWindow,
+    AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize, State, WebviewWindow,
 };
 use walkdir::WalkDir;
 
@@ -64,6 +64,25 @@ struct UsageCache {
 }
 
 struct PinState(AtomicBool);
+
+struct DockState {
+    docked: AtomicBool,
+    edge: AtomicU8,
+}
+
+impl Default for DockState {
+    fn default() -> Self {
+        Self {
+            docked: AtomicBool::new(false),
+            edge: AtomicU8::new(0),
+        }
+    }
+}
+
+const EDGE_LEFT: u8 = 1;
+const EDGE_RIGHT: u8 = 2;
+const EDGE_TOP: u8 = 3;
+const EDGE_BOTTOM: u8 = 4;
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -496,6 +515,97 @@ fn toggle_expanded(window: WebviewWindow) -> Result<bool, String> {
     Ok(!expanded)
 }
 
+fn handle_window_moved(window: &tauri::Window, position: PhysicalPosition<i32>) {
+    let dock_state = window.state::<DockState>();
+    let Ok(Some(monitor)) = window.monitor_from_point(position.x as f64, position.y as f64) else {
+        return;
+    };
+    let work = monitor.work_area();
+    let Ok(size) = window.outer_size() else {
+        return;
+    };
+    let scale = monitor.scale_factor();
+    let snap_threshold = (14.0 * scale).round() as i32;
+    let release_threshold = (42.0 * scale).round() as i32;
+    let left = work.position.x;
+    let top = work.position.y;
+    let right = left + work.size.width as i32;
+    let bottom = top + work.size.height as i32;
+    let window_right = position.x + size.width as i32;
+    let window_bottom = position.y + size.height as i32;
+    let distances = [
+        (EDGE_LEFT, (position.x - left).abs()),
+        (EDGE_RIGHT, (right - window_right).abs()),
+        (EDGE_TOP, (position.y - top).abs()),
+        (EDGE_BOTTOM, (bottom - window_bottom).abs()),
+    ];
+
+    if !dock_state.docked.load(Ordering::SeqCst) {
+        let Some((edge, _)) = distances
+            .into_iter()
+            .filter(|(_, distance)| *distance <= snap_threshold)
+            .min_by_key(|(_, distance)| *distance)
+        else {
+            return;
+        };
+        let dock_width = (168.0 * scale).round() as u32;
+        let dock_height = (48.0 * scale).round() as u32;
+        let max_x = right - dock_width as i32;
+        let max_y = bottom - dock_height as i32;
+        let x = match edge {
+            EDGE_LEFT => left,
+            EDGE_RIGHT => max_x,
+            _ => position.x.clamp(left, max_x),
+        };
+        let y = match edge {
+            EDGE_TOP => top,
+            EDGE_BOTTOM => max_y,
+            _ => position.y.clamp(top, max_y),
+        };
+        dock_state.docked.store(true, Ordering::SeqCst);
+        dock_state.edge.store(edge, Ordering::SeqCst);
+        let _ = window.set_size(PhysicalSize::new(dock_width, dock_height));
+        let _ = window.set_position(PhysicalPosition::new(x, y));
+        let _ = window.emit("edge-docked", true);
+        return;
+    }
+
+    if distances
+        .iter()
+        .any(|(_, distance)| *distance <= release_threshold)
+    {
+        return;
+    }
+
+    let compact_width = (330.0 * scale).round() as u32;
+    let compact_height = (146.0 * scale).round() as u32;
+    let inset = (48.0 * scale).round() as i32;
+    let edge = dock_state.edge.load(Ordering::SeqCst);
+    let max_x = right - compact_width as i32;
+    let max_y = bottom - compact_height as i32;
+    let x = match edge {
+        EDGE_LEFT => (left + inset).min(max_x),
+        EDGE_RIGHT => (max_x - inset).max(left),
+        _ => position.x.clamp(left, max_x),
+    };
+    let y = match edge {
+        EDGE_TOP => (top + inset).min(max_y),
+        EDGE_BOTTOM => (max_y - inset).max(top),
+        _ => position.y.clamp(top, max_y),
+    };
+    dock_state.docked.store(false, Ordering::SeqCst);
+    let _ = window.set_size(PhysicalSize::new(compact_width, compact_height));
+    let _ = window.set_position(PhysicalPosition::new(x, y));
+    let _ = window.emit("edge-docked", false);
+}
+
+#[tauri::command]
+fn check_edge_docking(window: tauri::Window) {
+    if let Ok(position) = window.outer_position() {
+        handle_window_moved(&window, position);
+    }
+}
+
 fn show(app: &AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.show();
@@ -507,6 +617,7 @@ pub fn run() {
     tauri::Builder::default()
         .manage(Mutex::new(UsageCache::default()))
         .manage(PinState(AtomicBool::new(true)))
+        .manage(DockState::default())
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
             None,
@@ -516,7 +627,8 @@ pub fn run() {
             hide_window,
             toggle_pin,
             get_settings,
-            toggle_expanded
+            toggle_expanded,
+            check_edge_docking
         ])
         .setup(|app| {
             let show_item = MenuItem::with_id(app, "show", "Show Agent Meter", true, None::<&str>)?;
@@ -547,11 +659,13 @@ pub fn run() {
                 .build(app)?;
             Ok(())
         })
-        .on_window_event(|window, event| {
-            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+        .on_window_event(|window, event| match event {
+            tauri::WindowEvent::Moved(position) => handle_window_moved(window, *position),
+            tauri::WindowEvent::CloseRequested { api, .. } => {
                 api.prevent_close();
                 let _ = window.hide();
             }
+            _ => {}
         })
         .run(tauri::generate_context!())
         .expect("error while running Agent Meter");

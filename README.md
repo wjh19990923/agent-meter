@@ -4,13 +4,13 @@
 
 **A lightweight Windows widget for Codex and Claude Code usage.**
 
-[![Current version](https://img.shields.io/badge/current_version-v0.3.1-9fdbb4?style=for-the-badge)](https://github.com/wjh19990923/agent-meter/releases/tag/v0.3.1)
+[![Current version](https://img.shields.io/badge/current_version-v0.4.0-9fdbb4?style=for-the-badge)](https://github.com/wjh19990923/agent-meter/releases/tag/v0.4.0)
 
 <a href="#english"><img alt="English" src="https://img.shields.io/badge/English-171b20?style=for-the-badge"></a>
 <a href="#中文"><img alt="中文" src="https://img.shields.io/badge/中文-75a987?style=for-the-badge"></a>
 
-[![Portable download](https://img.shields.io/badge/Download-Portable_EXE-9fdbb4?style=for-the-badge&logo=windows&logoColor=171b20)](https://github.com/wjh19990923/agent-meter/releases/download/v0.3.1/Agent-Meter-Tauri-0.3.1-Portable.exe)
-[![Setup download](https://img.shields.io/badge/Download-Installer-8abf9d?style=for-the-badge&logo=windows&logoColor=171b20)](https://github.com/wjh19990923/agent-meter/releases/download/v0.3.1/Agent-Meter-Tauri-0.3.1-Setup.exe)
+[![Portable download](https://img.shields.io/badge/Download-Portable_EXE-9fdbb4?style=for-the-badge&logo=windows&logoColor=171b20)](https://github.com/wjh19990923/agent-meter/releases/download/v0.4.0/Agent-Meter-Tauri-0.4.0-Portable.exe)
+[![Setup download](https://img.shields.io/badge/Download-Installer-8abf9d?style=for-the-badge&logo=windows&logoColor=171b20)](https://github.com/wjh19990923/agent-meter/releases/download/v0.4.0/Agent-Meter-Tauri-0.4.0-Setup.exe)
 
 ## Two views, one click / 一键切换两种形态
 
@@ -33,6 +33,12 @@
   </tr>
 </table>
 
+### Edge-docked micro widget / 贴边微型浮窗
+
+<img src="docs/images/edge-docked.png" alt="Agent Meter edge-docked micro widget" width="362">
+
+Drag the widget against any screen edge to shrink it automatically; drag it away to restore the compact view. / 将浮窗拖到屏幕任意边缘会自动缩小，拖离边缘即可恢复。
+
 </div>
 
 ---
@@ -41,14 +47,14 @@
 
 Agent Meter is a lightweight, local-first Windows desktop widget for monitoring Codex and Claude Code token usage and API-equivalent cost estimates. It is built with Tauri 2 and the portable executable is about 3 MB.
 
-**Current release: [v0.3.1](https://github.com/wjh19990923/agent-meter/releases/tag/v0.3.1)**
+**Current release: [v0.4.0](https://github.com/wjh19990923/agent-meter/releases/tag/v0.4.0)**
 
 ### Download
 
 | Package | Best for | Direct download |
 |---|---|---|
-| Portable `.exe` | Trying Agent Meter without installing it | [Download portable version](https://github.com/wjh19990923/agent-meter/releases/download/v0.3.1/Agent-Meter-Tauri-0.3.1-Portable.exe) |
-| NSIS installer | Daily use and Start Menu integration | [Download installer](https://github.com/wjh19990923/agent-meter/releases/download/v0.3.1/Agent-Meter-Tauri-0.3.1-Setup.exe) |
+| Portable `.exe` | Trying Agent Meter without installing it | [Download portable version](https://github.com/wjh19990923/agent-meter/releases/download/v0.4.0/Agent-Meter-Tauri-0.4.0-Portable.exe) |
+| NSIS installer | Daily use and Start Menu integration | [Download installer](https://github.com/wjh19990923/agent-meter/releases/download/v0.4.0/Agent-Meter-Tauri-0.4.0-Setup.exe) |
 
 Windows SmartScreen may warn about an unknown publisher because the binaries are not code-signed. If you built or downloaded the file from this repository, select **More info → Run anyway**.
 
@@ -70,6 +76,10 @@ The default compact view stays out of the way and shows three values at a glance
 - today's estimated API-equivalent cost.
 
 Use the controls in the title bar to expand, refresh, keep the widget on top, hide it, or close it to the system tray.
+
+### Edge docking
+
+Drag the widget until it touches the top, bottom, left, or right edge of the current monitor. It snaps into place and shrinks to a `168 × 48` logical-pixel micro widget showing combined tokens and today's estimated cost. Drag the micro widget away from the edge to restore the normal compact view. The usable work area is respected, so it does not cover the taskbar.
 
 ### Expanded details
 
@@ -123,14 +133,14 @@ npm.cmd run build
 
 Agent Meter 是一个轻量、完全本地运行的 Windows 桌面小组件，用来查看 Codex 和 Claude Code 的 token 用量以及 API 等价费用估算。项目使用 Tauri 2 构建，免安装版约 3 MB。
 
-**当前版本：[v0.3.1](https://github.com/wjh19990923/agent-meter/releases/tag/v0.3.1)**
+**当前版本：[v0.4.0](https://github.com/wjh19990923/agent-meter/releases/tag/v0.4.0)**
 
 ### 下载
 
 | 版本 | 适合场景 | 直接下载 |
 |---|---|---|
-| 便携版 `.exe` | 不安装，下载后直接测试 | [下载便携版](https://github.com/wjh19990923/agent-meter/releases/download/v0.3.1/Agent-Meter-Tauri-0.3.1-Portable.exe) |
-| NSIS 安装包 | 长期使用，集成到开始菜单 | [下载安装包](https://github.com/wjh19990923/agent-meter/releases/download/v0.3.1/Agent-Meter-Tauri-0.3.1-Setup.exe) |
+| 便携版 `.exe` | 不安装，下载后直接测试 | [下载便携版](https://github.com/wjh19990923/agent-meter/releases/download/v0.4.0/Agent-Meter-Tauri-0.4.0-Portable.exe) |
+| NSIS 安装包 | 长期使用，集成到开始菜单 | [下载安装包](https://github.com/wjh19990923/agent-meter/releases/download/v0.4.0/Agent-Meter-Tauri-0.4.0-Setup.exe) |
 
 由于当前文件没有商业代码签名证书，Windows SmartScreen 可能显示“未知发布者”。确认文件来自本仓库后，可以选择 **更多信息 → 仍要运行**。
 
@@ -152,6 +162,10 @@ Agent Meter 读取本机的 token 元数据：
 - 今天的 API 等价费用估算。
 
 标题栏按钮可以展开详情、手动刷新、保持置顶、隐藏窗口，或者关闭到系统托盘。
+
+### 贴边吸附
+
+把浮窗拖到当前显示器的顶部、底部、左侧或右侧，它会自动贴边并缩成 `168 × 48` 逻辑像素的微型组件，只保留总 token 和今日预估费用。把微型组件拖离边缘后，会自动恢复普通紧凑浮窗。吸附位置会避开任务栏，并支持多显示器的各自工作区域。
 
 ### 展开详情
 

@@ -71,6 +71,8 @@ async function refresh() {
     $('compactCodex').textContent = formatTokens(snapshot.codex.total);
     $('compactClaude').textContent = formatTokens(snapshot.claude.total);
     $('compactCost').textContent = formatCost(snapshot.costUsd);
+    $('dockedTotal').textContent = `${formatTokens(snapshot.total)} tok`;
+    $('dockedCost').textContent = formatCost(snapshot.costUsd);
     $('statusText').textContent = snapshot.status === 'live' ? 'Watching local logs' : 'Ready';
     $('liveIndicator').classList.toggle('is-live', snapshot.status === 'live');
     $('updatedAt').textContent = `Updated ${new Date(snapshot.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
@@ -124,7 +126,12 @@ invoke('get_settings').then((settings) => {
   $('expandButton').querySelector('span').textContent = settings.expanded ? '↙' : '↗';
 });
 isEnabled().then((enabled) => { $('startupToggle').checked = enabled; });
+listen('edge-docked', (event) => {
+  document.querySelector('.widget').classList.toggle('edge-docked', Boolean(event.payload));
+});
+setInterval(() => invoke('check_edge_docking'), 180);
 setInterval(refresh, 15000);
 refresh();
 import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
 import { disable, enable, isEnabled } from '@tauri-apps/plugin-autostart';
