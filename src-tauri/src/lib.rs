@@ -3,14 +3,14 @@ use serde::Serialize;
 use serde_json::Value;
 use std::{
     collections::{BTreeMap, HashMap, HashSet},
-    fs::File,
+    fs::{self, File},
     io::{BufRead, BufReader},
     path::{Path, PathBuf},
     sync::{
         atomic::{AtomicBool, AtomicU8, Ordering},
         Mutex, OnceLock,
     },
-    time::UNIX_EPOCH,
+    time::{Duration, Instant, UNIX_EPOCH},
 };
 use tauri::{
     menu::{Menu, MenuItem},
@@ -61,6 +61,18 @@ struct SourceCache {
 struct UsageCache {
     codex: SourceCache,
     claude: SourceCache,
+}
+
+#[derive(Default)]
+struct OatCache {
+    checked_at: Option<Instant>,
+    snapshot: Option<OatSnapshot>,
+}
+
+struct OatKeyEntry {
+    id: String,
+    label: String,
+    token: String,
 }
 
 struct PinState(AtomicBool);
@@ -117,6 +129,26 @@ struct Snapshot {
     total: u64,
     status: &'static str,
     cost_usd: f64,
+}
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct OatKeyStatus {
+    id: String,
+    label: String,
+    active: bool,
+    available: bool,
+    five_hour_remaining: Option<f64>,
+    seven_day_remaining: Option<f64>,
+    detail: String,
+}
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct OatSnapshot {
+    active_mode: String,
+    checked_at: String,
+    keys: Vec<OatKeyStatus>,
 }
 
 #[derive(Serialize)]
@@ -438,12 +470,194 @@ fn summarize(source: &SourceCache, today: &str) -> AgentSnapshot {
     }
 }
 
-#[tauri::command]
-fn get_usage(cache: State<'_, Mutex<UsageCache>>) -> Result<Snapshot, String> {
-    let home = std::env::var_os("USERPROFILE")
+fn home_dir() -> Result<PathBuf, String> {
+    std::env::var_os("USERPROFILE")
         .or_else(|| std::env::var_os("HOME"))
         .map(PathBuf::from)
-        .ok_or("Home directory is unavailable")?;
+        .ok_or_else(|| "Home directory is unavailable".to_string())
+}
+
+fn parse_shared_oat_keys(contents: &str) -> Vec<OatKeyEntry> {
+    contents
+        .lines()
+        .filter_map(|line| {
+            let value = line.trim().trim_matches('"');
+            let (label, token) = value.split_once(':')?;
+            if label.is_empty() || !token.starts_with("sk-ant-oat") {
+                return None;
+            }
+            Some((label.to_string(), token.to_string()))
+        })
+        .enumerate()
+        .map(|(index, (label, token))| OatKeyEntry {
+            id: (index + 1).to_string(),
+            label,
+            token,
+        })
+        .collect()
+}
+
+fn parse_local_oat_key(contents: &str) -> Option<String> {
+    contents.lines().find_map(|line| {
+        let (_, value) = line.split_once('=')?;
+        let token = value.trim().trim_matches(['"', '\'']);
+        token.starts_with("sk-ant-oat").then(|| token.to_string())
+    })
+}
+
+fn oat_paths(home: &Path) -> (PathBuf, PathBuf, PathBuf) {
+    let root = std::env::var_os("CLAUDE_OAT_HOME")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| home.join(".claude-oat-switch"));
+    let local = std::env::var_os("CLAUDE_OAT_LOCAL_FILE")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| home.join(".claude-oat-local"));
+    let mode = std::env::var_os("CLAUDE_OAT_MODE_FILE")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| home.join(".claude-oat-mode"));
+    (root.join("keys.sh"), local, mode)
+}
+
+fn load_oat_entries(home: &Path) -> Result<Option<(Vec<OatKeyEntry>, String)>, String> {
+    let (shared_path, local_path, mode_path) = oat_paths(home);
+    if !shared_path.is_file() {
+        return Ok(None);
+    }
+    let shared = fs::read_to_string(&shared_path)
+        .map_err(|error| format!("Could not read cckey configuration: {error}"))?;
+    let mut entries = parse_shared_oat_keys(&shared);
+    if let Ok(local) = fs::read_to_string(local_path) {
+        if let Some(token) = parse_local_oat_key(&local) {
+            entries.push(OatKeyEntry {
+                id: "mine".to_string(),
+                label: "Your key".to_string(),
+                token,
+            });
+        }
+    }
+    let active_mode = fs::read_to_string(mode_path)
+        .unwrap_or_else(|_| "1".to_string())
+        .trim()
+        .to_string();
+    Ok(Some((entries, active_mode)))
+}
+
+fn remaining_percent(value: Option<&reqwest::header::HeaderValue>) -> Option<f64> {
+    let utilization = value?.to_str().ok()?.parse::<f64>().ok()?;
+    Some(((1.0 - utilization).clamp(0.0, 1.0) * 100.0).round())
+}
+
+fn probe_oat_key(
+    client: &reqwest::blocking::Client,
+    entry: OatKeyEntry,
+    active: bool,
+) -> OatKeyStatus {
+    let response = client
+        .post("https://api.anthropic.com/v1/messages")
+        .bearer_auth(&entry.token)
+        .header("anthropic-beta", "oauth-2025-04-20")
+        .header("anthropic-version", "2023-06-01")
+        .json(&serde_json::json!({
+            "model": "claude-haiku-4-5-20251001",
+            "max_tokens": 1,
+            "messages": [{"role": "user", "content": "OK"}]
+        }))
+        .send();
+    match response {
+        Ok(response) if response.status().is_success() => {
+            let headers = response.headers();
+            OatKeyStatus {
+                id: entry.id,
+                label: entry.label,
+                active,
+                available: true,
+                five_hour_remaining: remaining_percent(
+                    headers.get("anthropic-ratelimit-unified-5h-utilization"),
+                ),
+                seven_day_remaining: remaining_percent(
+                    headers.get("anthropic-ratelimit-unified-7d-utilization"),
+                ),
+                detail: "Available".to_string(),
+            }
+        }
+        Ok(response) => OatKeyStatus {
+            id: entry.id,
+            label: entry.label,
+            active,
+            available: false,
+            five_hour_remaining: None,
+            seven_day_remaining: None,
+            detail: format!("HTTP {}", response.status().as_u16()),
+        },
+        Err(error) => OatKeyStatus {
+            id: entry.id,
+            label: entry.label,
+            active,
+            available: false,
+            five_hour_remaining: None,
+            seven_day_remaining: None,
+            detail: if error.is_timeout() {
+                "Timed out".to_string()
+            } else {
+                "Unreachable".to_string()
+            },
+        },
+    }
+}
+
+fn collect_oat_status(app: &AppHandle, force: bool) -> Result<Option<OatSnapshot>, String> {
+    let home = home_dir()?;
+    let Some((entries, active_mode)) = load_oat_entries(&home)? else {
+        return Ok(None);
+    };
+    let cache_state = app.state::<Mutex<OatCache>>();
+    {
+        let cache = cache_state
+            .lock()
+            .map_err(|_| "OAT status cache lock failed")?;
+        if !force
+            && cache
+                .checked_at
+                .is_some_and(|checked| checked.elapsed() < Duration::from_secs(300))
+        {
+            return Ok(cache.snapshot.clone());
+        }
+    }
+    let client = reqwest::blocking::Client::builder()
+        .timeout(Duration::from_secs(12))
+        .user_agent("Agent-Meter/0.6")
+        .build()
+        .map_err(|_| "Could not initialize the OAT quota checker")?;
+    let keys = entries
+        .into_iter()
+        .map(|entry| {
+            let active = entry.id == active_mode;
+            probe_oat_key(&client, entry, active)
+        })
+        .collect();
+    let snapshot = OatSnapshot {
+        active_mode,
+        checked_at: Local::now().to_rfc3339(),
+        keys,
+    };
+    let mut cache = cache_state
+        .lock()
+        .map_err(|_| "OAT status cache lock failed")?;
+    cache.checked_at = Some(Instant::now());
+    cache.snapshot = Some(snapshot.clone());
+    Ok(Some(snapshot))
+}
+
+#[tauri::command]
+async fn get_oat_status(app: AppHandle, force: bool) -> Result<Option<OatSnapshot>, String> {
+    tauri::async_runtime::spawn_blocking(move || collect_oat_status(&app, force))
+        .await
+        .map_err(|error| format!("OAT status task failed: {error}"))?
+}
+
+#[tauri::command]
+fn get_usage(cache: State<'_, Mutex<UsageCache>>) -> Result<Snapshot, String> {
+    let home = home_dir()?;
     let mut cache = cache.lock().map_err(|_| "Usage cache lock failed")?;
     scan_source(
         &mut cache.codex,
@@ -514,6 +728,24 @@ fn toggle_expanded(window: WebviewWindow) -> Result<bool, String> {
         .set_size(tauri::LogicalSize::new(width, height))
         .map_err(|error| error.to_string())?;
     Ok(!expanded)
+}
+
+#[tauri::command]
+fn set_oat_panel_visible(window: WebviewWindow, visible: bool) -> Result<(), String> {
+    let expanded = window
+        .inner_size()
+        .map_err(|error| error.to_string())?
+        .height
+        > 300;
+    if expanded {
+        window
+            .set_size(tauri::LogicalSize::new(
+                392.0,
+                if visible { 860.0 } else { 690.0 },
+            ))
+            .map_err(|error| error.to_string())?;
+    }
+    Ok(())
 }
 
 fn handle_window_moved(window: &tauri::Window, position: PhysicalPosition<i32>) {
@@ -617,6 +849,7 @@ fn show(app: &AppHandle) {
 pub fn run() {
     tauri::Builder::default()
         .manage(Mutex::new(UsageCache::default()))
+        .manage(Mutex::new(OatCache::default()))
         .manage(PinState(AtomicBool::new(true)))
         .manage(DockState::default())
         .plugin(tauri_plugin_autostart::init(
@@ -629,6 +862,8 @@ pub fn run() {
             toggle_pin,
             get_settings,
             toggle_expanded,
+            get_oat_status,
+            set_oat_panel_visible,
             check_edge_docking
         ])
         .setup(|app| {
@@ -714,5 +949,16 @@ mod tests {
     fn project_name_reads_cross_platform_paths() {
         assert_eq!(project_name(r"C:\work\alpha"), "alpha");
         assert_eq!(project_name("/Users/test/work/beta"), "beta");
+    }
+
+    #[test]
+    fn oat_key_parser_ignores_comments_and_keeps_labels() {
+        let keys = parse_shared_oat_keys(
+            "# no secrets here\n  \"team-a:sk-ant-oat01-redacted-a\"\ninvalid\n\"team-b:sk-ant-oat01-redacted-b\"",
+        );
+        assert_eq!(keys.len(), 2);
+        assert_eq!(keys[0].id, "1");
+        assert_eq!(keys[0].label, "team-a");
+        assert_eq!(keys[1].label, "team-b");
     }
 }

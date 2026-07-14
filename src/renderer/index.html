@@ -103,6 +103,19 @@
         </section>
       </div>
 
+      <section id="oatPanel" class="oat-panel detailed is-hidden" aria-labelledby="oatTitle">
+        <div class="oat-heading">
+          <div>
+            <p id="oatTitle" class="agent-name">Claude OAT keys</p>
+            <p class="project">Current model: <span id="oatCurrentModel">Unknown</span></p>
+          </div>
+          <button id="oatRefreshButton" class="oat-refresh" type="button">Check now</button>
+        </div>
+        <div id="oatLoading" class="oat-loading">Checking cckey quota...</div>
+        <div id="oatKeys" class="oat-keys is-hidden"></div>
+        <p id="oatCheckedAt" class="oat-checked"></p>
+      </section>
+
       <section id="emptyState" class="empty-state detailed is-hidden">
         <p>No usage recorded today</p>
         <span>Start a Codex or Claude Code session. This view updates automatically.</span>

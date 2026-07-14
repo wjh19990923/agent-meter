@@ -1,6 +1,6 @@
 {
   "name": "agent-meter",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "A lightweight Windows and macOS desktop widget for live Codex and Claude Code usage.",
   "author": "wjh",
   "license": "MIT",

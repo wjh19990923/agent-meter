@@ -1,5 +1,5 @@
 const $ = (id) => document.getElementById(id);
-const state = { loading: true, refreshing: false };
+const state = { loading: true, refreshing: false, oatLoading: false, claudeModel: 'Unknown' };
 
 function formatTokens(value) {
   const number = Number(value || 0);
@@ -54,6 +54,72 @@ function renderAgent(name, usage) {
   renderChart(`${name}Chart`, usage.history);
 }
 
+function quotaText(value) {
+  return Number.isFinite(value) ? `${Math.round(value)}%` : '--';
+}
+
+function renderOatKeys(snapshot) {
+  const keys = $('oatKeys');
+  keys.replaceChildren(...snapshot.keys.map((key) => {
+    const row = document.createElement('div');
+    row.className = `oat-key${key.available ? ' is-available' : ''}${key.active ? ' is-active' : ''}`;
+    const identity = document.createElement('div');
+    identity.className = 'oat-key-name';
+    const dot = document.createElement('i');
+    dot.setAttribute('aria-hidden', 'true');
+    const label = document.createElement('div');
+    label.className = 'oat-key-label';
+    const name = document.createElement('strong');
+    name.textContent = key.label;
+    const detail = document.createElement('span');
+    detail.textContent = key.detail;
+    label.append(name, detail);
+    identity.append(dot, label);
+    const quota = (caption, value) => {
+      const element = document.createElement('div');
+      element.className = 'oat-quota';
+      const label = document.createElement('span');
+      label.textContent = caption;
+      const amount = document.createElement('strong');
+      amount.textContent = quotaText(value);
+      element.append(label, amount);
+      return element;
+    };
+    row.append(identity, quota('5h left', key.fiveHourRemaining), quota('7d left', key.sevenDayRemaining));
+    return row;
+  }));
+  $('oatLoading').classList.add('is-hidden');
+  keys.classList.remove('is-hidden');
+  $('oatCheckedAt').textContent = `Checked ${new Date(snapshot.checkedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+}
+
+async function refreshOat(force = false) {
+  if (state.oatLoading) return;
+  state.oatLoading = true;
+  $('oatRefreshButton').disabled = true;
+  try {
+    const snapshot = await invoke('get_oat_status', { force });
+    if (!snapshot) {
+      $('oatPanel').classList.add('is-hidden');
+      await invoke('set_oat_panel_visible', { visible: false });
+      return;
+    }
+    $('oatPanel').classList.remove('is-hidden');
+    await invoke('set_oat_panel_visible', { visible: true });
+    $('oatCurrentModel').textContent = state.claudeModel;
+    renderOatKeys(snapshot);
+  } catch (error) {
+    console.error(error);
+    $('oatPanel').classList.remove('is-hidden');
+    await invoke('set_oat_panel_visible', { visible: true });
+    $('oatLoading').classList.remove('is-hidden');
+    $('oatLoading').textContent = 'Could not read cckey status';
+  } finally {
+    state.oatLoading = false;
+    $('oatRefreshButton').disabled = false;
+  }
+}
+
 function show(view) {
   ['loadingState', 'content', 'emptyState', 'errorState'].forEach((id) => $(id).classList.add('is-hidden'));
   $(view).classList.remove('is-hidden');
@@ -78,6 +144,8 @@ async function refresh() {
     $('updatedAt').textContent = `Updated ${new Date(snapshot.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     renderAgent('codex', snapshot.codex);
     renderAgent('claude', snapshot.claude);
+    state.claudeModel = snapshot.claude.model || 'Unknown';
+    $('oatCurrentModel').textContent = state.claudeModel;
     show(snapshot.status === 'empty' ? 'emptyState' : 'content');
   } catch (error) {
     console.error(error);
@@ -92,13 +160,18 @@ async function refresh() {
   }
 }
 
-$('refreshButton').addEventListener('click', refresh);
+$('refreshButton').addEventListener('click', async () => {
+  await refresh();
+  if (document.querySelector('.widget').classList.contains('expanded')) await refreshOat(true);
+});
 $('expandButton').addEventListener('click', async () => {
   const expanded = await invoke('toggle_expanded');
   document.querySelector('.widget').classList.toggle('expanded', expanded);
   $('expandButton').querySelector('span').textContent = expanded ? '↙' : '↗';
   $('expandButton').setAttribute('aria-label', expanded ? 'Collapse widget' : 'Expand details');
+  if (expanded) refreshOat(false);
 });
+$('oatRefreshButton').addEventListener('click', () => refreshOat(true));
 $('retryButton').addEventListener('click', refresh);
 $('minimizeButton').addEventListener('click', () => invoke('hide_window'));
 $('closeButton').addEventListener('click', () => invoke('hide_window'));
@@ -123,6 +196,7 @@ invoke('get_settings').then((settings) => {
   $('pinButton').classList.toggle('is-active', settings.pinned);
   $('pinButton').title = `Always on top: ${settings.pinned ? 'on' : 'off'}`;
   document.querySelector('.widget').classList.toggle('expanded', settings.expanded);
+  if (settings.expanded) refreshOat(false);
   $('expandButton').querySelector('span').textContent = settings.expanded ? '↙' : '↗';
 });
 isEnabled().then((enabled) => { $('startupToggle').checked = enabled; });
@@ -131,6 +205,9 @@ listen('edge-docked', (event) => {
 });
 setInterval(() => invoke('check_edge_docking'), 180);
 setInterval(refresh, 15000);
+setInterval(() => {
+  if (document.querySelector('.widget').classList.contains('expanded')) refreshOat(false);
+}, 300000);
 refresh();
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';

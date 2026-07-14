@@ -4,14 +4,14 @@
 
 **A lightweight Windows and macOS widget for Codex and Claude Code usage.**
 
-[![Current version](https://img.shields.io/badge/current_version-v0.5.0-9fdbb4?style=for-the-badge)](https://github.com/wjh19990923/agent-meter/releases/tag/v0.5.0)
+[![Current version](https://img.shields.io/badge/current_version-v0.6.0-9fdbb4?style=for-the-badge)](https://github.com/wjh19990923/agent-meter/releases/tag/v0.6.0)
 
 <a href="#english"><img alt="English" src="https://img.shields.io/badge/English-171b20?style=for-the-badge"></a>
 <a href="#中文"><img alt="中文" src="https://img.shields.io/badge/中文-75a987?style=for-the-badge"></a>
 
-[![Windows portable](https://img.shields.io/badge/Windows-Portable_EXE-9fdbb4?style=for-the-badge&logo=windows&logoColor=171b20)](https://github.com/wjh19990923/agent-meter/releases/download/v0.5.0/Agent-Meter-Tauri-0.5.0-Portable.exe)
-[![Windows installer](https://img.shields.io/badge/Windows-Installer-8abf9d?style=for-the-badge&logo=windows&logoColor=171b20)](https://github.com/wjh19990923/agent-meter/releases/download/v0.5.0/Agent-Meter-Tauri-0.5.0-Setup.exe)
-[![macOS universal](https://img.shields.io/badge/macOS-Universal_DMG-b9e8c8?style=for-the-badge&logo=apple&logoColor=171b20)](https://github.com/wjh19990923/agent-meter/releases/download/v0.5.0/Agent-Meter-0.5.0-macOS-Universal.dmg)
+[![Windows portable](https://img.shields.io/badge/Windows-Portable_EXE-9fdbb4?style=for-the-badge&logo=windows&logoColor=171b20)](https://github.com/wjh19990923/agent-meter/releases/download/v0.6.0/Agent-Meter-Tauri-0.6.0-Portable.exe)
+[![Windows installer](https://img.shields.io/badge/Windows-Installer-8abf9d?style=for-the-badge&logo=windows&logoColor=171b20)](https://github.com/wjh19990923/agent-meter/releases/download/v0.6.0/Agent-Meter-Tauri-0.6.0-Setup.exe)
+[![macOS universal](https://img.shields.io/badge/macOS-Universal_DMG-b9e8c8?style=for-the-badge&logo=apple&logoColor=171b20)](https://github.com/wjh19990923/agent-meter/releases/download/v0.6.0/Agent-Meter-0.6.0-macOS-Universal.dmg)
 
 ## Two views, one click / 一键切换两种形态
 
@@ -48,15 +48,15 @@ Drag the widget against any screen edge to shrink it automatically; drag it away
 
 Agent Meter is a lightweight, local-first Windows and macOS desktop widget for monitoring Codex and Claude Code token usage and API-equivalent cost estimates. It is built with Tauri 2.
 
-**Current release: [v0.5.0](https://github.com/wjh19990923/agent-meter/releases/tag/v0.5.0)**
+**Current release: [v0.6.0](https://github.com/wjh19990923/agent-meter/releases/tag/v0.6.0)**
 
 ### Download
 
 | Package | Best for | Direct download |
 |---|---|---|
-| Windows portable `.exe` | Trying Agent Meter without installing it | [Download Windows portable](https://github.com/wjh19990923/agent-meter/releases/download/v0.5.0/Agent-Meter-Tauri-0.5.0-Portable.exe) |
-| Windows NSIS installer | Daily use and Start Menu integration | [Download Windows installer](https://github.com/wjh19990923/agent-meter/releases/download/v0.5.0/Agent-Meter-Tauri-0.5.0-Setup.exe) |
-| macOS universal `.dmg` | Apple Silicon and Intel Macs | [Download macOS DMG](https://github.com/wjh19990923/agent-meter/releases/download/v0.5.0/Agent-Meter-0.5.0-macOS-Universal.dmg) |
+| Windows portable `.exe` | Trying Agent Meter without installing it | [Download Windows portable](https://github.com/wjh19990923/agent-meter/releases/download/v0.6.0/Agent-Meter-Tauri-0.6.0-Portable.exe) |
+| Windows NSIS installer | Daily use and Start Menu integration | [Download Windows installer](https://github.com/wjh19990923/agent-meter/releases/download/v0.6.0/Agent-Meter-Tauri-0.6.0-Setup.exe) |
+| macOS universal `.dmg` | Apple Silicon and Intel Macs | [Download macOS DMG](https://github.com/wjh19990923/agent-meter/releases/download/v0.6.0/Agent-Meter-0.6.0-macOS-Universal.dmg) |
 
 Windows SmartScreen or macOS Gatekeeper may warn because the binaries are not notarized with paid platform certificates. On macOS, open the DMG, drag Agent Meter to Applications, then Control-click the app and choose **Open** the first time.
 
@@ -100,6 +100,12 @@ The expanded view adds:
 
 Click the diagonal arrow again to return to the compact widget.
 
+### Optional cckey / OAT status
+
+If Agent Meter detects the local `~/.claude-oat-switch/keys.sh` configuration, the expanded view adds an OAT key panel. It shows which key is active, whether each configured key can currently reach Anthropic, remaining 5-hour and 7-day quota percentages when provided by the response, and the model used by the latest Claude Code session.
+
+The feature is capability-detected and stays hidden for everyone else. Tokens never reach the webview, logs, screenshots, or Agent Meter cache. Quota probes are made directly to Anthropic and cached for five minutes; **Check now** performs one 1-token probe per configured key.
+
 ### Cost estimates
 
 Costs are calculated locally from a bundled snapshot of the [LiteLLM model pricing database](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json), the same upstream pricing source used by ccusage. Input, cache read, cache write, and output prices are calculated separately when the model provides them.
@@ -137,15 +143,15 @@ On macOS, use `npm install`, `npm run dev`, and `npm run build:macos`. A tagged 
 
 Agent Meter 是一个轻量、完全本地运行的 Windows 和 macOS 桌面小组件，用来查看 Codex 和 Claude Code 的 token 用量以及 API 等价费用估算。项目使用 Tauri 2 构建。
 
-**当前版本：[v0.5.0](https://github.com/wjh19990923/agent-meter/releases/tag/v0.5.0)**
+**当前版本：[v0.6.0](https://github.com/wjh19990923/agent-meter/releases/tag/v0.6.0)**
 
 ### 下载
 
 | 版本 | 适合场景 | 直接下载 |
 |---|---|---|
-| Windows 便携版 `.exe` | 不安装，下载后直接测试 | [下载 Windows 便携版](https://github.com/wjh19990923/agent-meter/releases/download/v0.5.0/Agent-Meter-Tauri-0.5.0-Portable.exe) |
-| Windows NSIS 安装包 | 长期使用，集成到开始菜单 | [下载 Windows 安装包](https://github.com/wjh19990923/agent-meter/releases/download/v0.5.0/Agent-Meter-Tauri-0.5.0-Setup.exe) |
-| macOS 通用 `.dmg` | 同时支持 Apple Silicon 和 Intel Mac | [下载 macOS DMG](https://github.com/wjh19990923/agent-meter/releases/download/v0.5.0/Agent-Meter-0.5.0-macOS-Universal.dmg) |
+| Windows 便携版 `.exe` | 不安装，下载后直接测试 | [下载 Windows 便携版](https://github.com/wjh19990923/agent-meter/releases/download/v0.6.0/Agent-Meter-Tauri-0.6.0-Portable.exe) |
+| Windows NSIS 安装包 | 长期使用，集成到开始菜单 | [下载 Windows 安装包](https://github.com/wjh19990923/agent-meter/releases/download/v0.6.0/Agent-Meter-Tauri-0.6.0-Setup.exe) |
+| macOS 通用 `.dmg` | 同时支持 Apple Silicon 和 Intel Mac | [下载 macOS DMG](https://github.com/wjh19990923/agent-meter/releases/download/v0.6.0/Agent-Meter-0.6.0-macOS-Universal.dmg) |
 
 由于当前文件没有付费平台签名与 Apple 公证，Windows SmartScreen 或 macOS Gatekeeper 可能会提示。macOS 首次使用时，把应用拖入“应用程序”，然后按住 Control 点击 Agent Meter 并选择 **打开**。
 
@@ -188,6 +194,12 @@ Agent Meter 读取本机的 token 元数据：
 - 当前项目名称、刷新状态和开机启动选项。
 
 再次点击斜向箭头即可收回紧凑浮窗。
+
+### 可选的 cckey / OAT 状态
+
+如果 Agent Meter 检测到本机的 `~/.claude-oat-switch/keys.sh` 配置，展开模式会自动增加 OAT Key 状态面板，显示当前激活 Key、每把 Key 是否可用、服务端返回的 5 小时与 7 天剩余百分比，以及最近一次 Claude Code session 实际使用的模型。
+
+没有安装或配置 `cckey` 的用户不会看到这块面板，窗口仍保持原来的展开高度。OAT 不会进入前端、日志、截图或 Agent Meter 缓存；配额结果缓存 5 分钟，点击 **Check now** 会为每把已配置 Key 发送一次 1-token 探测请求。
 
 ### 关于费用
 
