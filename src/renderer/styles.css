@@ -24,6 +24,9 @@ button, input { font: inherit; }
   background: var(--surface);
   box-shadow: 0 24px 70px rgba(3, 8, 12, 0.45), inset 0 1px rgba(255, 255, 255, 0.04);
 }
+.widget.expanded { overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(159, 219, 180, 0.28) transparent; }
+.widget.expanded::-webkit-scrollbar { width: 5px; }
+.widget.expanded::-webkit-scrollbar-thumb { border-radius: 5px; background: rgba(159, 219, 180, 0.28); }
 
 .compact-summary {
   height: 94px;
@@ -132,16 +135,18 @@ button, input { font: inherit; }
 .oat-refresh:active { transform: scale(0.98); }
 .oat-refresh:disabled { opacity: 0.48; cursor: wait; }
 .oat-loading { min-height: 82px; display: grid; place-items: center; color: var(--muted); font-size: 10px; }
-.oat-keys { margin-top: 13px; display: grid; gap: 1px; background: var(--line); }
-.oat-key { min-height: 52px; padding: 9px 10px; display: grid; grid-template-columns: minmax(0, 1fr) 58px 58px; align-items: center; gap: 8px; background: var(--surface); }
+.oat-keys { margin-top: 12px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); }
+.oat-key { min-width: 0; min-height: 76px; padding: 9px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: end; gap: 9px 4px; background: var(--surface); }
 .oat-key-name { min-width: 0; display: flex; align-items: center; gap: 7px; }
+.oat-key .oat-key-name { grid-column: 1 / -1; align-self: start; }
 .oat-key-name i { width: 6px; height: 6px; flex: 0 0 auto; border-radius: 50%; background: #657079; }
 .oat-key.is-available .oat-key-name i { background: var(--accent); }
 .oat-key-label { min-width: 0; }
 .oat-key-label strong, .oat-key-label span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .oat-key-label strong { font-size: 11px; font-weight: 600; }
 .oat-key-label span { margin-top: 2px; color: var(--muted); font-size: 8px; }
-.oat-key.is-active .oat-key-label strong::after { content: "ACTIVE"; margin-left: 6px; color: var(--accent-strong); font-size: 7px; letter-spacing: 0.08em; }
+.oat-key.is-active { box-shadow: inset 0 2px var(--accent); }
+.oat-key.is-active .oat-key-label strong::after { content: "ON"; margin-left: 5px; color: var(--accent-strong); font-size: 7px; letter-spacing: 0.08em; }
 .oat-quota span, .oat-quota strong { display: block; }
 .oat-quota span { margin-bottom: 3px; color: var(--muted); font-size: 8px; }
 .oat-quota strong { font-family: "Cascadia Mono", Consolas, monospace; font-size: 11px; font-weight: 500; }

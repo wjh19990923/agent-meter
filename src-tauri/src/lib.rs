@@ -719,15 +719,51 @@ fn toggle_expanded(window: WebviewWindow) -> Result<bool, String> {
         .map_err(|error| error.to_string())?
         .height
         > 300;
-    let (width, height) = if expanded {
-        (330.0, 146.0)
+    if expanded {
+        window
+            .set_size(tauri::LogicalSize::new(330.0, 146.0))
+            .map_err(|error| error.to_string())?;
     } else {
-        (392.0, 690.0)
-    };
-    window
-        .set_size(tauri::LogicalSize::new(width, height))
-        .map_err(|error| error.to_string())?;
+        set_expanded_size(&window, 690.0)?;
+    }
     Ok(!expanded)
+}
+
+fn set_expanded_size(window: &WebviewWindow, desired_height: f64) -> Result<(), String> {
+    let Some(monitor) = window
+        .current_monitor()
+        .map_err(|error| error.to_string())?
+    else {
+        return window
+            .set_size(tauri::LogicalSize::new(392.0, desired_height))
+            .map_err(|error| error.to_string());
+    };
+    let scale = monitor.scale_factor();
+    let work = monitor.work_area();
+    let margin = (16.0 * scale).round() as i32;
+    let available_height = (work.size.height as f64 / scale - 32.0).max(420.0);
+    let height = desired_height.min(available_height);
+    window
+        .set_size(tauri::LogicalSize::new(392.0, height))
+        .map_err(|error| error.to_string())?;
+
+    let position = window.outer_position().map_err(|error| error.to_string())?;
+    let size = window.outer_size().map_err(|error| error.to_string())?;
+    let min_x = work.position.x + margin;
+    let min_y = work.position.y + margin;
+    let max_x = (work.position.x + work.size.width as i32 - size.width as i32 - margin).max(min_x);
+    let max_y =
+        (work.position.y + work.size.height as i32 - size.height as i32 - margin).max(min_y);
+    let fitted = PhysicalPosition::new(
+        position.x.clamp(min_x, max_x),
+        position.y.clamp(min_y, max_y),
+    );
+    if fitted != position {
+        window
+            .set_position(fitted)
+            .map_err(|error| error.to_string())?;
+    }
+    Ok(())
 }
 
 #[tauri::command]
@@ -738,18 +774,18 @@ fn set_oat_panel_visible(window: WebviewWindow, visible: bool) -> Result<(), Str
         .height
         > 300;
     if expanded {
-        window
-            .set_size(tauri::LogicalSize::new(
-                392.0,
-                if visible { 860.0 } else { 690.0 },
-            ))
-            .map_err(|error| error.to_string())?;
+        set_expanded_size(&window, if visible { 790.0 } else { 690.0 })?;
     }
     Ok(())
 }
 
 fn handle_window_moved(window: &tauri::Window, position: PhysicalPosition<i32>) {
     let dock_state = window.state::<DockState>();
+    if !dock_state.docked.load(Ordering::SeqCst)
+        && window.inner_size().is_ok_and(|size| size.height > 300)
+    {
+        return;
+    }
     let Ok(Some(monitor)) = window.monitor_from_point(position.x as f64, position.y as f64) else {
         return;
     };
