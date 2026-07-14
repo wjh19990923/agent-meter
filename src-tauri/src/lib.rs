@@ -587,7 +587,7 @@ fn probe_oat_key(
             available: false,
             five_hour_remaining: None,
             seven_day_remaining: None,
-            detail: format!("HTTP {}", response.status().as_u16()),
+            detail: format!("Unreachable (HTTP {})", response.status().as_u16()),
         },
         Err(error) => OatKeyStatus {
             id: entry.id,

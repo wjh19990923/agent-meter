@@ -104,6 +104,8 @@ Click the diagonal arrow again to return to the compact widget.
 
 If Agent Meter detects the local `~/.claude-oat-switch/keys.sh` configuration, the expanded view adds an OAT key panel. It shows which key is active, whether each configured key can currently reach Anthropic, remaining 5-hour and 7-day quota percentages when provided by the response, and the model used by the latest Claude Code session.
 
+An unsuccessful probe is shown as `Unreachable (HTTP 403)`, `Unreachable (HTTP 429)`, or the corresponding HTTP status. This keeps the result understandable while preserving the status code for troubleshooting; it does not necessarily mean the key has no quota remaining.
+
 The feature is capability-detected and stays hidden for everyone else. Tokens never reach the webview, logs, screenshots, or Agent Meter cache. Quota probes are made directly to Anthropic and cached for five minutes; **Check now** performs one 1-token probe per configured key.
 
 ### Cost estimates
@@ -198,6 +200,8 @@ Agent Meter 读取本机的 token 元数据：
 ### 可选的 cckey / OAT 状态
 
 如果 Agent Meter 检测到本机的 `~/.claude-oat-switch/keys.sh` 配置，展开模式会自动增加 OAT Key 状态面板，显示当前激活 Key、每把 Key 是否可用、服务端返回的 5 小时与 7 天剩余百分比，以及最近一次 Claude Code session 实际使用的模型。
+
+探测失败时会显示 `Unreachable (HTTP 403)`、`Unreachable (HTTP 429)` 或对应的 HTTP 状态码。这样既能让普通用户理解当前 Key 无法连接，也能保留排查信息；它不一定代表这把 Key 已经没有剩余用量。
 
 没有安装或配置 `cckey` 的用户不会看到这块面板，窗口仍保持原来的展开高度。OAT 不会进入前端、日志、截图或 Agent Meter 缓存；配额结果缓存 5 分钟，点击 **Check now** 会为每把已配置 Key 发送一次 1-token 探测请求。
 
